@@ -1,7 +1,9 @@
+import { Router } from '@angular/router';
 import { LaravelService } from './../laravel.service';
 import { LoginData } from './../login-data';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
+import { LocalStorage } from '@ngx-pwa/local-storage';
 
 @Component({
   selector: 'app-login',
@@ -10,7 +12,7 @@ import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms'
 })
 export class LoginComponent implements OnInit {
   loginForm:any;
-  constructor(public fb:FormBuilder, public lara:LaravelService) {
+  constructor(public fb:FormBuilder, public lara:LaravelService,public storage:LocalStorage,public router:Router) {
     this.createForm();
   }
 
@@ -51,7 +53,9 @@ export class LoginComponent implements OnInit {
     this.buildData();
     setTimeout(() => {
       this.lara.login(this.loginCredentails).subscribe((res)=>{
-        console.log(res);
+        this.storeJwt(res);
+        this.router.navigateByUrl('dashboard');
+
       },err=>{
         console.log(err);
       })
@@ -63,8 +67,12 @@ export class LoginComponent implements OnInit {
     this.loginCredentails.password = this.loginForm.controls['password'].value;
   }
 
-  storeJwt(){
-    
+  storeJwt(res){
+    this.storage.setItem('credentials',res).subscribe((res)=>{
+      console.log('Local storage successful');
+    },err=>{
+      console.log('Failed storing data locally');
+    })
   }
 
 
